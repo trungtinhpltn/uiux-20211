@@ -1,4 +1,3 @@
-import IconLCP from "components/shared/icon";
 import Document, { Html, Head, Main, NextScript } from "next/document";
 
 class MyDocument extends Document {
@@ -30,7 +29,6 @@ class MyDocument extends Document {
           />
         </Head>
         <body>
-          <IconLCP />
           <Main />
           <NextScript />
         </body>
