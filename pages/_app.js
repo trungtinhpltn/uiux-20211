@@ -1,7 +1,24 @@
-import '../styles/globals.css'
+import App from "next/app";
+import Layout from "components/shared/Layout";
+import Container from "components/shared/Container";
+import "../public/css/styles.css";
+import AppContext from "AppContext";
 
-function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps} />
-}
+const MyApp = ({ Component, pageProps }) => {
+  return (
+    <AppContext>
+      <Layout>
+        <Container>
+          <Component {...pageProps} />
+        </Container>
+      </Layout>
+    </AppContext>
+  );
+};
 
-export default MyApp
+MyApp.getInitialProps = async (ctx) => {
+  const appProps = await App.getInitialProps(ctx);
+  return { ...appProps };
+};
+
+export default MyApp;
