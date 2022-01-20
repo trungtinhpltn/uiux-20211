@@ -1,6 +1,6 @@
 import { getRequest, putRequest } from "utils/request";
 
-const serviceURL = `https://uiux-20211.vercel.app`;
+const serviceURL = `https://ui-ux-mtt.herokuapp.com`;
 
 export async function getKPIs() {
   const url = serviceURL + `/api/kpis?populate=*&sort=fullName:asc`;
