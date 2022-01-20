@@ -5,6 +5,7 @@ import { getKPIs, upDateKPIS } from "services/kpi.services";
 import { useAppContext } from "AppContext";
 import { roundNumber } from "utils";
 import DeletePopup from "components/DeletePopup";
+import EditPopup from "components/EditPopup";
 
 const Page = ({ listKpi }) => {
   const cb = useRef(() => {});
@@ -13,6 +14,9 @@ const Page = ({ listKpi }) => {
   const [item, setItem] = useState();
   const [message, setMessage] = useState(``);
   const [showDelete, setShowDelete] = useState(false);
+  const [taskItem, setTaskItem] = useState({});
+  const [showEdit, setShowEdit] = useState(false);
+
   const seo = useMemo(() => ({
     meta_title: `KPI cá nhân`,
     meta_description: `KPI cá nhân`,
@@ -78,8 +82,16 @@ const Page = ({ listKpi }) => {
     }
   };
 
+  const handleEdit = (item) => {
+    setShowEdit(true);
+    setTaskItem(item);
+  };
+
   return (
     <>
+      {showEdit && (
+        <EditPopup setShow={setShowEdit} item={taskItem} user={item} setItem={setItem} />
+      )}
       {showDelete && <DeletePopup message={message} setShow={setShowDelete} cb={cb} />}
       <Seo seo={seo} />
       <div className="div pt-10 pb-10">
@@ -170,6 +182,7 @@ const Page = ({ listKpi }) => {
                             type="button"
                             className="btn btn-warning"
                             style={{ width: `100px`, marginLeft: 5 }}
+                            onClick={() => handleEdit(item)}
                           >
                             Chỉnh sửa
                           </button>
