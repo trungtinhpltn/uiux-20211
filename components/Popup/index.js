@@ -1,15 +1,24 @@
+import { useAppContext } from "AppContext";
+import { useRouter } from "next/router";
 import { useKPIMMContext } from "pages/kpi-member/manager";
 import React from "react";
 import { roundNumber } from "utils";
 
 const Popup = () => {
   const { setShowPopup, item } = useKPIMMContext();
+  const { setUser } = useAppContext();
+  const router = useRouter();
   const {
     attributes: { fullName, position, tasks },
     id,
   } = item;
   const finish = tasks?.reduce((pre, next) => pre + next?.finish, 0);
   const total = tasks?.reduce((pre, next) => pre + next?.weight, 0);
+
+  const handleEditClick = () => {
+    setUser(item);
+    router.push(`/kpi-personals/personal`);
+  };
   return (
     <div className="pop-up">
       <div className="overlay z3" onClick={() => setShowPopup(false)} />
@@ -38,10 +47,14 @@ const Popup = () => {
                     <td>{item?.weight}</td>
                     <td>{item?.finish}</td>
                     <td>
-                      {item?.weight === item?.finish ? <b>Đã hoàn thành</b> : `Chưa hoàn thành`}
+                      {item?.weight === item?.finish && item?.weight > 0 ? (
+                        <b>Đã hoàn thành</b>
+                      ) : (
+                        `Chưa hoàn thành`
+                      )}
                     </td>
                     <td style={{ width: `150px`, textAlign: `center` }}>
-                      <button type="button" className="btn btn-warning">
+                      <button type="button" className="btn btn-warning" onClick={handleEditClick}>
                         Chỉnh sửa
                       </button>
                     </td>
@@ -51,7 +64,7 @@ const Popup = () => {
               <tr>
                 <th colSpan="2">Tổng</th>
                 <th>{total}</th>
-                <th>{`${roundNumber((finish / total) * 100, 2)}%`}</th>
+                <th>{`${total === 0 ? 0 : roundNumber((finish / total) * 100, 2)}%`}</th>
               </tr>
             </tbody>
           </table>

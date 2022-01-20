@@ -14,3 +14,17 @@ export async function getRequest(url, params) {
     console.log(error);
   }
 }
+
+export async function putRequest(url, data) {
+  try {
+    const response = await Axios.put(url, data, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}

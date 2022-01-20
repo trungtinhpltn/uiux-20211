@@ -1,14 +1,18 @@
 import Seo from "components/shared/Seo";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import { getKPIs } from "services/kpi.services";
+import { getKPIs, upDateKPIS } from "services/kpi.services";
 import { useAppContext } from "AppContext";
 import { roundNumber } from "utils";
+import DeletePopup from "components/DeletePopup";
 
 const Page = ({ listKpi }) => {
+  const cb = useRef(() => {});
   const { user } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [item, setItem] = useState();
+  const [message, setMessage] = useState(``);
+  const [showDelete, setShowDelete] = useState(false);
   const seo = useMemo(() => ({
     meta_title: `KPI cá nhân`,
     meta_description: `KPI cá nhân`,
@@ -42,8 +46,41 @@ const Page = ({ listKpi }) => {
     [finish, total]
   );
 
+  const handleDelete = (type, itemC) => {
+    if (type) {
+      setMessage(`Bạn có muốn xoá tất mục tiêu hiện tại`);
+      setShowDelete(true);
+      cb.current = async () => {
+        await upDateKPIS(item?.id, {
+          data: {
+            tasks: [],
+          },
+        });
+        const newData = { ...item, attributes: { ...item?.attributes, tasks: [] } };
+        setItem(newData);
+        setShowDelete(false);
+      };
+    } else {
+      setMessage(`Bạn có muốn xoá mục tiêu hiện tại`);
+      setShowDelete(true);
+      cb.current = async () => {
+        let tasks = item?.attributes?.tasks;
+        tasks = tasks?.filter((item) => item?.id !== itemC?.id);
+        await upDateKPIS(item?.id, {
+          data: {
+            tasks: tasks,
+          },
+        });
+        const newData = { ...item, attributes: { ...item?.attributes, tasks: tasks } };
+        setItem(newData);
+        setShowDelete(false);
+      };
+    }
+  };
+
   return (
     <>
+      {showDelete && <DeletePopup message={message} setShow={setShowDelete} cb={cb} />}
       <Seo seo={seo} />
       <div className="div pt-10 pb-10">
         <div className="col-12">
@@ -70,23 +107,25 @@ const Page = ({ listKpi }) => {
               </h5>
             </div>
             <div>
-              <Pie
-                data={state}
-                options={{
-                  title: {
-                    display: true,
-                    text: "Biểu đồ tỉ lệ",
-                    fontSize: 20,
-                    position: `top`,
-                  },
-                  legend: {
-                    display: true,
-                    position: "bottom",
-                  },
-                }}
-                width={400}
-                height={300}
-              />
+              {item?.attributes?.tasks.length > 0 && (
+                <Pie
+                  data={state}
+                  options={{
+                    title: {
+                      display: true,
+                      text: "Biểu đồ tỉ lệ",
+                      fontSize: 20,
+                      position: `top`,
+                    },
+                    legend: {
+                      display: true,
+                      position: "bottom",
+                    },
+                  }}
+                  width={400}
+                  height={300}
+                />
+              )}
             </div>
           </div>
           <div>
@@ -99,7 +138,16 @@ const Page = ({ listKpi }) => {
                     <th scope="col">Trọng số</th>
                     <th scope="col">Hoàn thành</th>
                     <th scope="col">Trạng thái</th>
-                    <th scope="col"></th>
+                    <th scope="col" style={{ width: `250px`, textAlign: `center` }}>
+                      <button
+                        type="button"
+                        className="btn btn-danger"
+                        style={{ width: `100px` }}
+                        onClick={() => handleDelete(true)}
+                      >
+                        Xoá tất cả
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -111,22 +159,42 @@ const Page = ({ listKpi }) => {
                         <td>{item?.weight}</td>
                         <td>{item?.finish}</td>
                         <td>
-                          {item?.weight === item?.finish ? <b>Đã hoàn thành</b> : `Chưa hoàn thành`}
+                          {item?.weight === item?.finish && item?.weight > 0 ? (
+                            <b>Đã hoàn thành</b>
+                          ) : (
+                            `Chưa hoàn thành`
+                          )}
                         </td>
-                        <td style={{ width: `150px`, textAlign: `center` }}>
-                          <button type="button" className="btn btn-warning">
+                        <td style={{ width: `250px`, textAlign: `center` }}>
+                          <button
+                            type="button"
+                            className="btn btn-warning"
+                            style={{ width: `100px`, marginLeft: 5 }}
+                          >
                             Chỉnh sửa
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            style={{ width: `100px`, marginLeft: 5 }}
+                            onClick={() => handleDelete(false, item)}
+                          >
+                            Xoá
                           </button>
                         </td>
                       </tr>
                     );
                   })}
-                  <tr className="text-danger">
-                    <th colSpan="2">Tổng</th>
-                    <th>{total}</th>
-                    <th>{`${roundNumber((finish / total) * 100, 2)}%`}</th>
-                    <th colSpan="2">{finish === total ? `Đã hoàn thành` : `Chưa hoàn thành`}</th>
-                  </tr>
+                  {item?.attributes?.tasks?.length > 0 && (
+                    <tr className="text-danger">
+                      <th colSpan="2">Tổng</th>
+                      <th>{total}</th>
+                      <th>{`${total === 0 ? 0 : roundNumber((finish / total) * 100, 2)}%`}</th>
+                      <th colSpan="2">
+                        {finish === total && total > 0 ? `Đã hoàn thành` : `Chưa hoàn thành`}
+                      </th>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

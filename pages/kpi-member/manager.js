@@ -70,18 +70,15 @@ const Page = ({ listKpi }) => {
                     attributes: { fullName, position, tasks },
                     id,
                   } = item;
-                  if (!tasks?.length) {
-                    return null;
-                  }
-                  const finish = tasks?.reduce((pre, next) => pre + next?.finish, 0);
-                  const total = tasks?.reduce((pre, next) => pre + next?.weight, 0);
+                  const finish = tasks?.reduce((pre, next) => pre + next?.finish, 0) || 0;
+                  const total = tasks?.reduce((pre, next) => pre + next?.weight, 0) || 0;
                   return (
                     <tr key={`${fullName}-${id}`}>
                       <th scope="row">{inx + 1}</th>
                       <td>{fullName}</td>
                       <td>{position}</td>
                       <td>{tasks?.length}</td>
-                      <td>{`${roundNumber((finish / total) * 100, 2)}%`}</td>
+                      <td>{`${total === 0 ? 0 : roundNumber((finish / total) * 100, 2)}%`}</td>
                       <td width={400}>
                         <button
                           type="button"
